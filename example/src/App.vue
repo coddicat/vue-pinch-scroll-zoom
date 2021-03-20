@@ -4,7 +4,7 @@
     origin: ({{ originX.toFixed(2) }}, {{ originY.toFixed(2) }}) <br />
     translate: ({{ translateX.toFixed(2) }}, {{ translateY.toFixed(2) }}) <br />
 
-    <pinch-scroll-zoom
+    <PinchScrollZoom
       ref="zoomer"
       :width="300"
       :height="400"
@@ -23,7 +23,7 @@
       style="border: 1px solid black"
     >
       <img src="https://picsum.photos/600/1000" width="300" height="400" />
-    </pinch-scroll-zoom>
+    </PinchScrollZoom>
 
     <button @click="reset">Reset</button>
     <label>
@@ -39,16 +39,18 @@
       max scale:
       <input type="number" v-model.number="maxScale" style="width: 40px" />
     </label>
-    <p>{{ eventName }}:<br> {{ eventData }}</p>
+    <p>
+      {{ eventName }}:<br />
+      {{ eventData }}
+    </p>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import PinchScrollZoom from "@/vue-pinch-scroll-zoom.vue";
+import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
 
 export default Vue.extend({
-  name: "ServeDev",
   components: {
     PinchScrollZoom,
   },
@@ -65,10 +67,11 @@ export default Vue.extend({
     eventData: {},
   }),
   methods: {
-    onEvent(name: string, e: object): void {
+    onEvent(name: string, e: PinchScrollZoomEmitData ): void {
       this.eventName = name;
       this.eventData = e;
     },
+
     reset(): void {
       this.scale = 1;
       this.translateX = 0;

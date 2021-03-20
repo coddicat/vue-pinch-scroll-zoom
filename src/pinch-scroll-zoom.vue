@@ -1,15 +1,15 @@
 <template>
   <div
-    class="vue-pinch-scroll-zoom"
+    class="pinch-scroll-zoom"
     :class="{
-      'vue-pinch-scroll-zoom--zoom-out': zoomOut,
-      'vue-pinch-scroll-zoom--zoom-in': zoomIn,
+      'pinch-scroll-zoom--zoom-out': zoomOut,
+      'pinch-scroll-zoom--zoom-in': zoomIn,
     }"
     @mousedown="startDrag"
     @mousemove="doDrag"
     :style="{ width: `${width}px`, height: `${height}px` }"
   >
-    <div class="vue-pinch-scroll-zoom__content" :style="getContainerStyle()">
+    <div class="pinch-scroll-zoom__content" :style="getContainerStyle()">
       <slot></slot>
     </div>
   </div>
@@ -17,7 +17,8 @@
 
 <script lang="ts">
 import _ from "lodash";
-import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis";
+//@ts-ignore
+import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis.ts";
 import Vue from "vue";
 import { PinchScrollZoomEmitData } from "./types";
 
@@ -308,7 +309,7 @@ export default /*#__PURE__*/ Vue.extend({
 </script>
 
 <style lang="scss">
-.vue-pinch-scroll-zoom {
+.pinch-scroll-zoom {
   position: relative;
   touch-action: none;
   user-select: none;

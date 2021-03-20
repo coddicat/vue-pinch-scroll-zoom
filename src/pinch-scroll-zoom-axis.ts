@@ -1,4 +1,3 @@
-
 export default class PinchScrollZoomAxis {
     private _point: number = 0;
     private _start1: number = 0;
