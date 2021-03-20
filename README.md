@@ -2,6 +2,7 @@
 Vue component that provides content scrolling and zooming using mouse events or two fingers pinch on a mobile devices
 
 #### example:
+https://vue-pinch-scroll-zoom.coddicat.com/
 
 ## Installation
 ```
