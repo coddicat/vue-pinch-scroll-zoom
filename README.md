@@ -4,7 +4,7 @@ Vue component that provides content scrolling and zooming using mouse events or 
 #### example:
 https://vue-pinch-scroll-zoom.coddicat.com/
 
-<img src="/example/example.gif" width="250"/>
+<img src="https://github.com/coddicat/vue-pinch-scroll-zoom/blob/main/example/example.gif" width="250"/>
 
 ## Installation
 ```
