@@ -17,8 +17,7 @@
 
 <script lang="ts">
 import _ from "lodash";
-//@ts-ignore
-import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis.ts";
+import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis";
 import Vue from "vue";
 import { PinchScrollZoomEmitData } from "./types";
 
@@ -71,8 +70,8 @@ export default /*#__PURE__*/ Vue.extend({
     },
     wheelVelocity: {
       type: Number,
-      default: 0.001
-    }
+      default: 0.001,
+    },
   },
   watch: {
     scale(val: number): void {
@@ -142,15 +141,15 @@ export default /*#__PURE__*/ Vue.extend({
         this.stopDrag();
         return;
       }
-      const clientX1 = touchEvent.touches[0].clientX;
-      const clientY1 = touchEvent.touches[0].clientY;
+      const clientX1 = this.getBoundingTouchClientX(touchEvent.touches[0]);
+      const clientY1 = this.getBoundingTouchClientY(touchEvent.touches[0]);
       if (touchEvent.touches.length > 1) {
         this.touch1 = true;
         this.touch2 = true;
         this.startScale = this.currentScale;
 
-        const clientX2 = touchEvent.touches[1].clientX;
-        const clientY2 = touchEvent.touches[1].clientY;
+        const clientX2 = this.getBoundingTouchClientX(touchEvent.touches[1]);
+        const clientY2 = this.getBoundingTouchClientY(touchEvent.touches[1]);
 
         this.axisX.pinch(clientX1, clientX2, this.currentScale);
         this.axisY.pinch(clientY1, clientY2, this.currentScale);
@@ -190,20 +189,26 @@ export default /*#__PURE__*/ Vue.extend({
 
       if (this.touch1 && this.touch2) {
         this.axisX.dragPinch(
-          touchEvent.touches[0].clientX,
-          touchEvent.touches[1].clientX
+          this.getBoundingTouchClientX(touchEvent.touches[0]),
+          this.getBoundingTouchClientX(touchEvent.touches[1])
         );
         this.axisY.dragPinch(
-          touchEvent.touches[0].clientY,
-          touchEvent.touches[1].clientY
+          this.getBoundingTouchClientY(touchEvent.touches[0]),
+          this.getBoundingTouchClientY(touchEvent.touches[1])
         );
       } else {
-        this.axisX.dragTouch(touchEvent.touches[0].clientX);
-        this.axisY.dragTouch(touchEvent.touches[0].clientY);
+        this.axisX.dragTouch(this.getBoundingTouchClientX(touchEvent.touches[0]));
+        this.axisY.dragTouch(this.getBoundingTouchClientY(touchEvent.touches[0]));
       }
 
       this.doScale(touchEvent);
-      this.submitDrag();
+      this.submitDrag();      
+    },
+    getBoundingTouchClientX(touch: any): number {
+      return touch.clientX - this.$el.getBoundingClientRect().left;
+    },
+    getBoundingTouchClientY(touch: any): number {
+      return touch.clientY - this.$el.getBoundingClientRect().top;
     },
     submitDrag(): void {
       this.$emit("dragging", this.getEmitData());
@@ -225,10 +230,10 @@ export default /*#__PURE__*/ Vue.extend({
       const touch2 = touchEvent.touches[1];
 
       const distance = this.getDistance(
-        touch1.clientX,
-        touch1.clientY,
-        touch2.clientX,
-        touch2.clientY
+        this.getBoundingTouchClientX(touch1),
+        this.getBoundingTouchClientY(touch1),
+        this.getBoundingTouchClientX(touch2),
+        this.getBoundingTouchClientY(touch2)
       );
 
       const startDistance = this.getDistance(
@@ -262,8 +267,10 @@ export default /*#__PURE__*/ Vue.extend({
     },
     doWheelScale(event: any): void {
       event.preventDefault();
-      this.axisX.pinch(event.clientX, event.clientX, this.currentScale);
-      this.axisY.pinch(event.clientY, event.clientY, this.currentScale);
+      const clientX = this.getBoundingTouchClientX(event);
+      const clientY = this.getBoundingTouchClientY(event);
+      this.axisX.pinch(clientX, clientX, this.currentScale);
+      this.axisY.pinch(clientY, clientY, this.currentScale);
 
       const factor = 1 - event.deltaY * this.wheelVelocity;
       const scale = this.currentScale * factor;

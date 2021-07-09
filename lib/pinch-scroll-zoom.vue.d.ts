@@ -7,6 +7,8 @@ declare const _default: import("vue/types/vue").ExtendedVue<Vue, any, {
     doDrag(touchEvent: any): void;
     doStopScallingEvent(): void;
     doDragEvent(touchEvent: any): void;
+    getBoundingTouchClientX(touch: any): number;
+    getBoundingTouchClientY(touch: any): number;
     submitDrag(): void;
     getDistance(x1: number, y1: number, x2: number, y2: number): number;
     doScale(touchEvent: any): void;
