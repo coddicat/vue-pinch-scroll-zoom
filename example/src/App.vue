@@ -21,8 +21,10 @@
       @stopDrag="(e) => onEvent('stopDrag', e)"
       @dragging="(e) => onEvent('dragging', e)"
       style="border: 1px solid black"
+      :content-width="500"
+      :content-height="500"
     >
-      <img src="https://picsum.photos/600/1000" width="300" height="400" />
+      <img src="https://picsum.photos/500/500" width="500" height="500" />
     </PinchScrollZoom>
 
     <button @click="reset">Reset</button>
@@ -61,8 +63,8 @@ export default Vue.extend({
     scale: 2,
     originX: 150,
     originY: 200,
-    translateX: 0,
-    translateY: 0,
+    translateX: -100,
+    translateY: -50,
     eventName: "N/A",
     eventData: {},
   }),
@@ -74,8 +76,8 @@ export default Vue.extend({
 
     reset(): void {
       this.scale = 1;
-      this.translateX = 0;
-      this.translateY = 0;
+      this.translateX = -100;
+      this.translateY = -50;
       this.originX = 150;
       this.originY = 200;
     },

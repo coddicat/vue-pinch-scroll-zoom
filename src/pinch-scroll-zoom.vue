@@ -9,7 +9,11 @@
     @mousemove="doDrag"
     :style="{ width: `${width}px`, height: `${height}px` }"
   >
-    <div class="pinch-scroll-zoom__content" :style="getContainerStyle()">
+    <div
+      ref="content"
+      class="pinch-scroll-zoom__content"
+      :style="getContainerStyle()"
+    >
       <slot></slot>
     </div>
   </div>
@@ -24,6 +28,14 @@ import { PinchScrollZoomEmitData } from "./types";
 export default /*#__PURE__*/ Vue.extend({
   name: "PinchScrollZoom",
   props: {
+    contentWidth: {
+      type: Number,
+      default: undefined,
+    },
+    contentHeight: {
+      type: Number,
+      default: undefined,
+    },
     width: {
       type: Number,
       required: true,
@@ -90,7 +102,7 @@ export default /*#__PURE__*/ Vue.extend({
       this.axisY.setOrigin(val);
     },
     within(): void {
-      this.checkReset();
+      this.checkWithin();
     },
   },
   data(): any {
@@ -99,11 +111,17 @@ export default /*#__PURE__*/ Vue.extend({
       touch2: false,
       currentScale: this.scale,
       startScale: this.scale,
-      axisX: new PinchScrollZoomAxis(this.width, this.originX, this.translateX),
+      axisX: new PinchScrollZoomAxis(
+        this.width,
+        this.originX,
+        this.translateX,
+        this.contentWidth
+      ),
       axisY: new PinchScrollZoomAxis(
         this.height,
         this.originY,
-        this.translateY
+        this.translateY,
+        this.contentHeight
       ),
       throttleDoDrag: _.throttle((this as any).doDragEvent, this.throttleDelay),
       stopScalling: _.debounce((this as any).doStopScallingEvent, 200),
@@ -197,12 +215,16 @@ export default /*#__PURE__*/ Vue.extend({
           this.getBoundingTouchClientY(touchEvent.touches[1])
         );
       } else {
-        this.axisX.dragTouch(this.getBoundingTouchClientX(touchEvent.touches[0]));
-        this.axisY.dragTouch(this.getBoundingTouchClientY(touchEvent.touches[0]));
+        this.axisX.dragTouch(
+          this.getBoundingTouchClientX(touchEvent.touches[0])
+        );
+        this.axisY.dragTouch(
+          this.getBoundingTouchClientY(touchEvent.touches[0])
+        );
       }
 
       this.doScale(touchEvent);
-      this.submitDrag();      
+      this.submitDrag();
     },
     getBoundingTouchClientX(touch: any): number {
       return touch.clientX - this.$el.getBoundingClientRect().left;
@@ -222,7 +244,7 @@ export default /*#__PURE__*/ Vue.extend({
     },
     doScale(touchEvent: any): void {
       if (touchEvent.touches.length < 2 || !this.touch1 || !this.touch2) {
-        this.checkReset();
+        this.checkWithin();
         return;
       }
 
@@ -259,7 +281,7 @@ export default /*#__PURE__*/ Vue.extend({
           this.stopScalling();
         }
       }
-      this.checkReset();
+      this.checkWithin();
 
       this.$emit("update:originX", this.axisX.origin);
       this.$emit("update:originY", this.axisY.origin);
@@ -277,16 +299,13 @@ export default /*#__PURE__*/ Vue.extend({
 
       this.submitScale(scale);
     },
-    checkReset() {
+    checkWithin() {
       if (!this.within) {
         return;
       }
-      if (this.currentScale < 1) {
-        this.axisX.resetOrigin();
-        this.axisY.resetOrigin();
-      }
-      this.axisY.resetPoint(this.currentScale);
-      this.axisX.resetPoint(this.currentScale);
+
+      this.axisY.checkAndResetToWithin(this.currentScale);
+      this.axisX.checkAndResetToWithin(this.currentScale);
     },
     getContainerStyle(): any {
       const x = `${this.axisX.point}px`;
