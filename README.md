@@ -51,6 +51,8 @@ the following properties can be used with the ".async" modifier
 |----|--------|-----------|-------|
 |width|yes|visible area width||
 |height|yes|visible area height||
+|contentWidth|no|should be defined when content width larger than container||
+|contentHeight|no|should be defined when content height larger than container||
 |minScale|no|minimum allowable scaling|0.3|
 |maxScale|no|maximum allowable scaling|5|
 |within|no|limit scrolling of content to its borders|true|
