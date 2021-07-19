@@ -14,9 +14,11 @@ declare const _default: import("vue/types/vue").ExtendedVue<Vue, any, {
     doScale(touchEvent: any): void;
     submitScale(scale: number): void;
     doWheelScale(event: any): void;
-    checkReset(): void;
+    checkWithin(): void;
     getContainerStyle(): any;
 }, unknown, {
+    contentWidth: number;
+    contentHeight: number;
     width: number;
     height: number;
     originX: number;
