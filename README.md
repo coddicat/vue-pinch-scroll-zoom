@@ -15,9 +15,10 @@ npm i @coddicat/vue-pinch-scroll-zoom
 template:
 ```
 <PinchScrollZoom
+  ref="zoomer"
   :width="300"
   :height="400"
-  :scale.sync="scale"
+  :scale="scale"
   @scalling="scallingHandler"
   style="border: 1px solid black"
 >
@@ -39,13 +40,22 @@ export default Vue.extend({
   methods: {
     scallingHandler(e: PinchScrollZoomEmitData ): void {
       console.log(e);
+    },
+    reset() {
+      this.$refs.zoomer.setData({
+        scale: 1,
+        originX: 0,
+        originY: 0,
+        translateX: 0,
+        translateY: 0        
+      });
     }
   }
 })
 ```
 
 ## Props
-the following properties can be used with the ".async" modifier
+the following properties don't support the ".async" modifier
 
 |name|required|description|default|
 |----|--------|-----------|-------|
@@ -79,3 +89,17 @@ export interface PinchScrollZoomEmitData {
 - stopDrag
 - dragging
 - scalling
+
+## Methods
+```
+.SetData(data: PinchScrollZoomSetData);
+
+export interface PinchScrollZoomSetData {
+    scale: number;
+    originX: number;
+    originY: number;
+    translateX: number;
+    translateY: number;
+}
+
+```
