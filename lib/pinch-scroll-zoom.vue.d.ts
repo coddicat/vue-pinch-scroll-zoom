@@ -1,6 +1,7 @@
 import Vue from "vue";
-import { PinchScrollZoomEmitData } from "./types";
+import { PinchScrollZoomEmitData, PinchScrollZoomSetData } from "./types";
 declare const _default: import("vue/types/vue").ExtendedVue<Vue, any, {
+    setData(data: PinchScrollZoomSetData): void;
     getEmitData(): PinchScrollZoomEmitData;
     stopDrag(): void;
     startDrag(touchEvent: any): void;
