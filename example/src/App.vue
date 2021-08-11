@@ -8,11 +8,11 @@
       ref="zoomer"
       :width="300"
       :height="400"
-      :scale.sync="scale"
-      :translate-x.sync="translateX"
-      :translate-y.sync="translateY"
-      :origin-x.sync="originX"
-      :origin-y.sync="originY"
+      :scale="scale"
+      :translate-x="translateX"
+      :translate-y="translateY"
+      :origin-x="originX"
+      :origin-y="originY"
       :within="within"
       :min-scale="minScale"
       :max-scale="maxScale"
@@ -72,14 +72,21 @@ export default Vue.extend({
     onEvent(name: string, e: PinchScrollZoomEmitData ): void {
       this.eventName = name;
       this.eventData = e;
+      this.scale = e.scale;
+      this.originX = e.originX;
+      this.originY = e.originY;
+      this.translateX = e.translateX;
+      this.translateY = e.translateY;
     },
 
     reset(): void {
-      this.scale = 1;
-      this.translateX = -100;
-      this.translateY = -50;
-      this.originX = 150;
-      this.originY = 200;
+      (this.$refs.zoomer as any).setData({
+        scale: 1,
+        originX: 150,
+        originY: 200,
+        translateX: -100,
+        translateY: -50        
+      });
     },
   },
 });

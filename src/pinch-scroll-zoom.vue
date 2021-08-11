@@ -23,7 +23,7 @@
 import _ from "lodash";
 import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis";
 import Vue from "vue";
-import { PinchScrollZoomEmitData } from "./types";
+import { PinchScrollZoomEmitData, PinchScrollZoomSetData } from "./types";
 
 export default /*#__PURE__*/ Vue.extend({
   name: "PinchScrollZoom",
@@ -130,6 +130,13 @@ export default /*#__PURE__*/ Vue.extend({
     };
   },
   methods: {
+    setData(data: PinchScrollZoomSetData) {
+      this.currentScale = data.scale;
+      this.axisX.setPoint(data.translateX);
+      this.axisY.setPoint(data.translateY);
+      this.axisX.setOrigin(data.originX);      
+      this.axisY.setOrigin(data.originY);      
+    },
     getEmitData(): PinchScrollZoomEmitData {
       return {
         x: this.axisX.point,
@@ -137,6 +144,8 @@ export default /*#__PURE__*/ Vue.extend({
         scale: this.currentScale,
         originX: this.axisX.origin,
         originY: this.axisY.origin,
+        translateX: this.axisX.point,
+        translateY: this.axisY.point,
       };
     },
     stopDrag(): void {
@@ -234,8 +243,6 @@ export default /*#__PURE__*/ Vue.extend({
     },
     submitDrag(): void {
       this.$emit("dragging", this.getEmitData());
-      this.$emit("update:translateX", this.axisX.point);
-      this.$emit("update:translateY", this.axisY.point);
     },
     getDistance(x1: number, y1: number, x2: number, y2: number): number {
       const sqrDistance = (x1 - x2) ** 2 + (y1 - y2) ** 2;
@@ -274,7 +281,6 @@ export default /*#__PURE__*/ Vue.extend({
         (scale <= this.maxScale || this.currentScale > scale)
       ) {
         if (this.currentScale != scale) {
-          this.$emit("scalling", this.getEmitData());
           this.zoomIn = this.currentScale < scale;
           this.zoomOut = this.currentScale > scale;
           this.currentScale = scale;
@@ -282,10 +288,7 @@ export default /*#__PURE__*/ Vue.extend({
         }
       }
       this.checkWithin();
-
-      this.$emit("update:originX", this.axisX.origin);
-      this.$emit("update:originY", this.axisY.origin);
-      this.$emit("update:scale", this.currentScale);
+      this.$emit("scalling", this.getEmitData());
     },
     doWheelScale(event: any): void {
       event.preventDefault();
