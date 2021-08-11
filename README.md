@@ -83,6 +83,8 @@ export interface PinchScrollZoomEmitData {
   scale: number;
   originX: number;
   originY: number;
+  translateX: number;
+  translateY: number;  
 }
 ```
 - startDrag
