@@ -127,6 +127,10 @@ export default /*#__PURE__*/ Vue.extend({
       stopScalling: _.debounce((this as any).doStopScallingEvent, 200),
       zoomIn: false,
       zoomOut: false,
+      stopDragListener: false,
+      startDragListener: false,
+      draggingListener: false,
+      scallingListener: false,
     };
   },
   methods: {
@@ -134,8 +138,8 @@ export default /*#__PURE__*/ Vue.extend({
       this.currentScale = data.scale;
       this.axisX.setPoint(data.translateX);
       this.axisY.setPoint(data.translateY);
-      this.axisX.setOrigin(data.originX);      
-      this.axisY.setOrigin(data.originY);      
+      this.axisX.setOrigin(data.originX);
+      this.axisY.setOrigin(data.originY);
     },
     getEmitData(): PinchScrollZoomEmitData {
       return {
@@ -153,7 +157,9 @@ export default /*#__PURE__*/ Vue.extend({
       this.touch2 = false;
       this.zoomIn = false;
       this.zoomOut = false;
-      this.$emit("stopDrag", this.getEmitData());
+      if (this.stopDragListener) {
+        this.$emit("stopDrag", this.getEmitData());
+      }
     },
     startDrag(touchEvent: any): void {
       if (!touchEvent.touches) {
@@ -187,7 +193,9 @@ export default /*#__PURE__*/ Vue.extend({
         this.axisY.touch(clientY1);
       }
 
-      this.$emit("startDrag", this.getEmitData());
+      if (this.startDragListener) {
+        this.$emit("startDrag", this.getEmitData());
+      }
     },
     doDrag(touchEvent: any): void {
       this.throttleDoDrag(touchEvent);
@@ -242,7 +250,9 @@ export default /*#__PURE__*/ Vue.extend({
       return touch.clientY - this.$el.getBoundingClientRect().top;
     },
     submitDrag(): void {
-      this.$emit("dragging", this.getEmitData());
+      if (this.draggingListener) {
+        this.$emit("dragging", this.getEmitData());
+      }
     },
     getDistance(x1: number, y1: number, x2: number, y2: number): number {
       const sqrDistance = (x1 - x2) ** 2 + (y1 - y2) ** 2;
@@ -288,7 +298,9 @@ export default /*#__PURE__*/ Vue.extend({
         }
       }
       this.checkWithin();
-      this.$emit("scalling", this.getEmitData());
+      if (this.scallingListener) {
+        this.$emit("scalling", this.getEmitData());
+      }
     },
     doWheelScale(event: any): void {
       event.preventDefault();
@@ -327,6 +339,11 @@ export default /*#__PURE__*/ Vue.extend({
     this.$el.addEventListener("touchstart", this.startDrag);
     this.$el.addEventListener("touchmove", this.doDrag);
     this.$el.addEventListener("wheel", this.doWheelScale);
+
+    this.stopDragListener = !!this.$listeners.stopDrag;
+    this.startDragListener = !!this.$listeners.startDrag;
+    this.draggingListener = !!this.$listeners.dragging;
+    this.scallingListener = !!this.$listeners.scalling;
   },
   beforeDestroy() {
     window.removeEventListener("mouseup", this.stopDrag);
