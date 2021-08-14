@@ -72,7 +72,8 @@ the following properties don't support the ".async" modifier
 |origin-y|no|transform-origin-y|height/2|
 |translate-x|no|transform: translateX|0|
 |translate-y|no|transform: translateY|0|
-|throttleDelay|no|rendering delay (milliseconds)|25
+|throttleDelay|no|rendering delay (milliseconds)|25|
+|draggable|no|draggable of/off|true|
 
 ## Events
 the following events are emitted with the argument:

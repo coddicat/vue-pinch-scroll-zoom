@@ -32,5 +32,6 @@ declare const _default: import("vue/types/vue").ExtendedVue<Vue, any, {
     minScale: number;
     maxScale: number;
     wheelVelocity: number;
+    draggable: boolean;
 }>;
 export default _default;

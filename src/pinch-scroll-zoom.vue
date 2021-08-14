@@ -84,10 +84,15 @@ export default /*#__PURE__*/ Vue.extend({
       type: Number,
       default: 0.001,
     },
+    draggable: {
+      type: Boolean,
+      default: true
+    }
   },
   watch: {
     scale(val: number): void {
-      this.currentScale = val;
+      //this.currentScale = val;
+      this.submitScale(val);
     },
     translateY(val: number): void {
       this.axisY.setPoint(val);
@@ -162,6 +167,8 @@ export default /*#__PURE__*/ Vue.extend({
       }
     },
     startDrag(touchEvent: any): void {
+      if (!this.draggable) return;
+
       if (!touchEvent.touches) {
         touchEvent.touches = [
           {
@@ -198,6 +205,8 @@ export default /*#__PURE__*/ Vue.extend({
       }
     },
     doDrag(touchEvent: any): void {
+      if (!this.draggable) return;
+
       this.throttleDoDrag(touchEvent);
     },
     doStopScallingEvent() {
