@@ -91,7 +91,6 @@ export default /*#__PURE__*/ Vue.extend({
   },
   watch: {
     scale(val: number): void {
-      //this.currentScale = val;
       this.submitScale(val);
     },
     translateY(val: number): void {
