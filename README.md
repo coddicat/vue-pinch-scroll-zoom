@@ -19,7 +19,7 @@ template:
   :width="300"
   :height="400"
   :scale="scale"
-  @scalling="scallingHandler"
+  @scaling="scalingHandler"
   style="border: 1px solid black"
 >
   <img src="https://picsum.photos/600/1000" width="300" height="400" />
@@ -38,7 +38,7 @@ export default Vue.extend({
     PinchScrollZoom,
   },
   methods: {
-    scallingHandler(e: PinchScrollZoomEmitData ): void {
+    scalingHandler(e: PinchScrollZoomEmitData ): void {
       console.log(e);
     },
     reset() {
@@ -72,7 +72,8 @@ the following properties don't support the ".async" modifier
 |origin-y|no|transform-origin-y|height/2|
 |translate-x|no|transform: translateX|0|
 |translate-y|no|transform: translateY|0|
-|throttleDelay|no|rendering delay (milliseconds)|25
+|throttleDelay|no|rendering delay (milliseconds)|25|
+|draggable|no|draggable of/off|true|
 
 ## Events
 the following events are emitted with the argument:
@@ -90,7 +91,7 @@ export interface PinchScrollZoomEmitData {
 - startDrag
 - stopDrag
 - dragging
-- scalling
+- scaling
 
 ## Methods
 ```

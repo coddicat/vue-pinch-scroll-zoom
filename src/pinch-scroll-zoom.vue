@@ -84,10 +84,14 @@ export default /*#__PURE__*/ Vue.extend({
       type: Number,
       default: 0.001,
     },
+    draggable: {
+      type: Boolean,
+      default: true
+    }
   },
   watch: {
     scale(val: number): void {
-      this.currentScale = val;
+      this.submitScale(val);
     },
     translateY(val: number): void {
       this.axisY.setPoint(val);
@@ -124,13 +128,13 @@ export default /*#__PURE__*/ Vue.extend({
         this.contentHeight
       ),
       throttleDoDrag: _.throttle((this as any).doDragEvent, this.throttleDelay),
-      stopScalling: _.debounce((this as any).doStopScallingEvent, 200),
+      stopScaling: _.debounce((this as any).doStopScalingEvent, 200),
       zoomIn: false,
       zoomOut: false,
       stopDragListener: false,
       startDragListener: false,
       draggingListener: false,
-      scallingListener: false,
+      scalingListener: false,
     };
   },
   methods: {
@@ -162,6 +166,8 @@ export default /*#__PURE__*/ Vue.extend({
       }
     },
     startDrag(touchEvent: any): void {
+      if (!this.draggable) return;
+
       if (!touchEvent.touches) {
         touchEvent.touches = [
           {
@@ -198,9 +204,11 @@ export default /*#__PURE__*/ Vue.extend({
       }
     },
     doDrag(touchEvent: any): void {
+      if (!this.draggable) return;
+
       this.throttleDoDrag(touchEvent);
     },
-    doStopScallingEvent() {
+    doStopScalingEvent() {
       this.zoomIn = false;
       this.zoomOut = false;
     },
@@ -294,12 +302,12 @@ export default /*#__PURE__*/ Vue.extend({
           this.zoomIn = this.currentScale < scale;
           this.zoomOut = this.currentScale > scale;
           this.currentScale = scale;
-          this.stopScalling();
+          this.stopScaling();
         }
       }
       this.checkWithin();
-      if (this.scallingListener) {
-        this.$emit("scalling", this.getEmitData());
+      if (this.scalingListener) {
+        this.$emit("scaling", this.getEmitData());
       }
     },
     doWheelScale(event: any): void {
@@ -343,7 +351,7 @@ export default /*#__PURE__*/ Vue.extend({
     this.stopDragListener = !!this.$listeners.stopDrag;
     this.startDragListener = !!this.$listeners.startDrag;
     this.draggingListener = !!this.$listeners.dragging;
-    this.scallingListener = !!this.$listeners.scalling;
+    this.scalingListener = !!this.$listeners.scaling;
   },
   beforeDestroy() {
     window.removeEventListener("mouseup", this.stopDrag);

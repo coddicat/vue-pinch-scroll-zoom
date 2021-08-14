@@ -6,7 +6,7 @@ declare const _default: import("vue/types/vue").ExtendedVue<Vue, any, {
     stopDrag(): void;
     startDrag(touchEvent: any): void;
     doDrag(touchEvent: any): void;
-    doStopScallingEvent(): void;
+    doStopScalingEvent(): void;
     doDragEvent(touchEvent: any): void;
     getBoundingTouchClientX(touch: any): number;
     getBoundingTouchClientY(touch: any): number;
@@ -32,5 +32,6 @@ declare const _default: import("vue/types/vue").ExtendedVue<Vue, any, {
     minScale: number;
     maxScale: number;
     wheelVelocity: number;
+    draggable: boolean;
 }>;
 export default _default;
