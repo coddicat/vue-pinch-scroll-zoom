@@ -19,7 +19,7 @@ template:
   :width="300"
   :height="400"
   :scale="scale"
-  @scalling="scallingHandler"
+  @scaling="scalingHandler"
   style="border: 1px solid black"
 >
   <img src="https://picsum.photos/600/1000" width="300" height="400" />
@@ -38,7 +38,7 @@ export default Vue.extend({
     PinchScrollZoom,
   },
   methods: {
-    scallingHandler(e: PinchScrollZoomEmitData ): void {
+    scalingHandler(e: PinchScrollZoomEmitData ): void {
       console.log(e);
     },
     reset() {
@@ -91,7 +91,7 @@ export interface PinchScrollZoomEmitData {
 - startDrag
 - stopDrag
 - dragging
-- scalling
+- scaling
 
 ## Methods
 ```

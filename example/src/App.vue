@@ -16,7 +16,7 @@
       :within="within"
       :min-scale="minScale"
       :max-scale="maxScale"
-      @scalling="(e) => onEvent('scalling', e)"
+      @scaling="(e) => onEvent('scaling', e)"
       @startDrag="(e) => onEvent('startDrag', e)"
       @stopDrag="(e) => onEvent('stopDrag', e)"
       @dragging="(e) => onEvent('dragging', e)"
