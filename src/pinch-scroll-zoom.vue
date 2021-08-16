@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import _ from "lodash";
+import { throttle, debounce } from "lodash";
 import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis";
 import Vue from "vue";
 import { PinchScrollZoomEmitData, PinchScrollZoomSetData } from "./types";
@@ -86,8 +86,8 @@ export default /*#__PURE__*/ Vue.extend({
     },
     draggable: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   watch: {
     scale(val: number): void {
@@ -127,8 +127,8 @@ export default /*#__PURE__*/ Vue.extend({
         this.translateY,
         this.contentHeight
       ),
-      throttleDoDrag: _.throttle((this as any).doDragEvent, this.throttleDelay),
-      stopScaling: _.debounce((this as any).doStopScalingEvent, 200),
+      throttleDoDrag: throttle((this as any).doDragEvent, this.throttleDelay),
+      stopScaling: debounce((this as any).doStopScalingEvent, 200),
       zoomIn: false,
       zoomOut: false,
       stopDragListener: false,
