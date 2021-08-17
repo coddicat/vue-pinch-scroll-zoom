@@ -13,7 +13,7 @@ npm i @coddicat/vue-pinch-scroll-zoom
 
 ## Usage
 template:
-```
+```html
 <PinchScrollZoom
   ref="zoomer"
   :width="300"
@@ -27,7 +27,7 @@ template:
 ```
 
 script:
-```
+```ts
 import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
 
 export default Vue.extend({
@@ -77,7 +77,7 @@ the following properties don't support the ".async" modifier
 
 ## Events
 the following events are emitted with the argument:
-```
+```ts
 export interface PinchScrollZoomEmitData {
   x: number;
   y: number;
@@ -94,7 +94,7 @@ export interface PinchScrollZoomEmitData {
 - scaling
 
 ## Methods
-```
+```ts
 .SetData(data: PinchScrollZoomSetData);
 
 export interface PinchScrollZoomSetData {
