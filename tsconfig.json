@@ -1,18 +1,22 @@
 {
-    "compilerOptions": {
-      "declarationDir": "lib",
-      "target": "es5",
-      "module": "es2015",
-      "sourceMap": true,
-      "declaration": true,
-      "importHelpers": true,
-      "strict": true,
-      "experimentalDecorators": true,
-      "allowSyntheticDefaultImports": true
-    },
-    "include": ["src/**/*.ts", "src/**/*.vue"],
-    "exclude": [
-        "node_modules",
-        "dist"
-    ]
-  }
+  "compilerOptions": {
+    "declarationDir": "lib",
+    "target": "es5",
+    "module": "es2015",
+    "sourceMap": true,
+    "declaration": true,
+    "importHelpers": true,
+    "strict": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "types": [
+    "node",
+    "vue"
+  ]
+}

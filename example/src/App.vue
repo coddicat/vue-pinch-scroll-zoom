@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
+import PinchScrollZoom, { PinchScrollZoomEmitData } from "../../lib/index";
 
 export default Vue.extend({
   components: {
