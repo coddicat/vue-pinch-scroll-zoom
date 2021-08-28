@@ -26,32 +26,32 @@ template:
 </PinchScrollZoom>
 ```
 
-script:
+type script:
 ```ts
+import { Component, Vue } from "vue-property-decorator";
 import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
 
-export default Vue.extend({
-  data: () => ({
-    scale: 2
-  }),
+@Component({
+  name: "PinchScrollZoomExample",
   components: {
-    PinchScrollZoom,
-  },
-  methods: {
-    scalingHandler(e: PinchScrollZoomEmitData ): void {
-      console.log(e);
-    },
-    reset() {
-      this.$refs.zoomer.setData({
-        scale: 1,
-        originX: 0,
-        originY: 0,
-        translateX: 0,
-        translateY: 0        
-      });
-    }
+    PinchScrollZoom
   }
 })
+export default class PinchScrollZoomExample extends Vue {
+  private scale = 2;
+  public scalingHandler(e: PinchScrollZoomEmitData): void {
+    console.log(e);
+  },
+  public reset() {
+    (this.$refs.zoomer as PinchScrollZoom).setData({
+      scale: 1,
+      originX: 0,
+      originY: 0,
+      translateX: 0,
+      translateY: 0        
+    });
+  }
+}
 ```
 
 ## Props
