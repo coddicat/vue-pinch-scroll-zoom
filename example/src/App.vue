@@ -49,27 +49,28 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import PinchScrollZoom, { PinchScrollZoomEmitData } from "../../lib/index";
+import { Component, Vue } from "vue-property-decorator";
+import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
 
-export default Vue.extend({
+@Component({
+  name: "PinchScrollZoomExample",
   components: {
-    PinchScrollZoom,
-  },
-  data: () => ({
-    within: false,
-    minScale: 0.3,
-    maxScale: 5,
-    scale: 2,
-    originX: 150,
-    originY: 200,
-    translateX: -100,
-    translateY: -50,
-    eventName: "N/A",
-    eventData: {},
-  }),
-  methods: {
-    onEvent(name: string, e: PinchScrollZoomEmitData ): void {
+    PinchScrollZoom
+  }
+})
+export default class PinchScrollZoomExample extends Vue {
+    private within = false;
+    private minScale = 0.3;
+    private maxScale = 5;
+    private scale = 2;
+    private originX = 150;
+    private originY = 200;
+    private translateX = -100;
+    private translateY = -50;
+    private eventName = "N/A";
+    private eventData = {};
+
+    public onEvent(name: string, e: PinchScrollZoomEmitData ): void {
       this.eventName = name;
       this.eventData = e;
       this.scale = e.scale;
@@ -77,17 +78,16 @@ export default Vue.extend({
       this.originY = e.originY;
       this.translateX = e.translateX;
       this.translateY = e.translateY;
-    },
+    }
 
-    reset(): void {
-      (this.$refs.zoomer as any).setData({
+    public reset(): void {
+      (this.$refs.zoomer as PinchScrollZoom).setData({
         scale: 1,
         originX: 150,
         originY: 200,
         translateX: -100,
         translateY: -50        
       });
-    },
-  },
-});
+    }
+}
 </script>
