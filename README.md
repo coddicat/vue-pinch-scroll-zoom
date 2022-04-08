@@ -74,6 +74,10 @@ the following properties don't support the ".async" modifier
 |translate-y|no|transform: translateY|0|
 |throttleDelay|no|rendering delay (milliseconds)|25|
 |draggable|no|draggable of/off|true|
+|enableScaling|no| for enable listener scaling event| true
+|enableStartDrag|no| for enable listener startDrag event| true
+|enableStopDrag|no| for enable listener stopDrag event| true
+|enableDragging|no| for enable listener dragging event| true
 
 ## Events
 the following events are emitted with the argument:
