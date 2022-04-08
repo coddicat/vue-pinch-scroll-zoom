@@ -6,6 +6,7 @@
 
     <PinchScrollZoom
       ref="zoomer"
+      v-bind="$attrs"
       :width="300"
       :height="400"
       :scale="scale"
@@ -20,6 +21,10 @@
       @startDrag="(e) => onEvent('startDrag', e)"
       @stopDrag="(e) => onEvent('stopDrag', e)"
       @dragging="(e) => onEvent('dragging', e)"
+      :enableScaling="true"
+      :enableStartDrag="true"
+      :enableStopDrag="true"
+      :enableDragging="true"
       style="border: 1px solid black"
       :content-width="500"
       :content-height="500"
@@ -49,12 +54,25 @@
 </template>
 
 <script lang="ts">
-// import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
 import PinchScrollZoom from "@/pinch-scroll-zoom.vue";
+import { PinchScrollZoomEmitData } from "@/types";
 
 import { defineComponent, ref } from "vue";
 
+export type PinchScrollZoomSetData = {
+  scale: number;
+  originX: number;
+  originY: number;
+  translateX: number;
+  translateY: number;
+};
+
+export type PinchScrollZoomRef = HTMLElement & {
+  setData: (data: PinchScrollZoomSetData) => void;
+};
+
 export default defineComponent({
+   inheritAttrs: false,
   name: "PinchScrollZoomExample",
   components: {
     PinchScrollZoom,
@@ -70,10 +88,9 @@ export default defineComponent({
     const translateY = ref(-50);
     const eventName = ref("N/A");
     const eventData = ref({});
-    const zoomer = ref(null);
+    const zoomer = ref<PinchScrollZoomRef | null>(null);
 
-    const onEvent = (name: string, e: any): void => {
-      // PinchScrollZoomEmitData
+    const onEvent = (name: string, e: PinchScrollZoomEmitData): void => {
       eventName.value = name;
       eventData.value = e;
       scale.value = e.scale;
@@ -85,8 +102,7 @@ export default defineComponent({
 
     const reset = (): void => {
       if (zoomer.value !== null) {
-        // extends PinchScrollZoom
-        (zoomer.value as any).setData({
+        (zoomer.value as PinchScrollZoomRef).setData({
           scale: 1,
           originX: 150,
           originY: 200,
