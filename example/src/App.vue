@@ -4,7 +4,7 @@
     origin: ({{ originX.toFixed(2) }}, {{ originY.toFixed(2) }}) <br />
     translate: ({{ translateX.toFixed(2) }}, {{ translateY.toFixed(2) }}) <br />
 
-    <PinchScrollZoom
+    <!-- <PinchScrollZoom
       ref="zoomer"
       :width="300"
       :height="400"
@@ -25,7 +25,7 @@
       :content-height="500"
     >
       <img src="https://picsum.photos/500/500" width="500" height="500" />
-    </PinchScrollZoom>
+    </PinchScrollZoom> -->
 
     <button @click="reset">Reset</button>
     <label>
@@ -49,45 +49,69 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
+// import { Component, Vue } from "vue-property-decorator";
+// import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
+// import PinchScrollZoom from "../../dist/types/entry.esm";
 
-@Component({
+import { defineComponent, ref } from "vue";
+
+export default defineComponent({
   name: "PinchScrollZoomExample",
   components: {
-    PinchScrollZoom
-  }
-})
-export default class PinchScrollZoomExample extends Vue {
-    private within = false;
-    private minScale = 0.3;
-    private maxScale = 5;
-    private scale = 2;
-    private originX = 150;
-    private originY = 200;
-    private translateX = -100;
-    private translateY = -50;
-    private eventName = "N/A";
-    private eventData = {};
+    // PinchScrollZoom,
+  },
+  setup() {
+    const within = ref(false);
+    const minScale = ref(0.3);
+    const maxScale = ref(5);
+    const scale = ref(2);
+    const originX = ref(150);
+    const originY = ref(200);
+    const translateX = ref(-100);
+    const translateY = ref(-50);
+    const eventName = ref("N/A");
+    const eventData = ref({});
+    const zoomer = ref(null);
 
-    public onEvent(name: string, e: PinchScrollZoomEmitData ): void {
-      this.eventName = name;
-      this.eventData = e;
-      this.scale = e.scale;
-      this.originX = e.originX;
-      this.originY = e.originY;
-      this.translateX = e.translateX;
-      this.translateY = e.translateY;
-    }
+    const onEvent = (name: string, e: any): void => {
+      // PinchScrollZoomEmitData
+      eventName.value = name;
+      eventData.value = e;
+      scale.value = e.scale;
+      originX.value = e.originX;
+      originY.value = e.originY;
+      translateX.value = e.translateX;
+      translateY.value = e.translateY;
+    };
 
-    public reset(): void {
-      (this.$refs.zoomer as PinchScrollZoom).setData({
-        scale: 1,
-        originX: 150,
-        originY: 200,
-        translateX: -100,
-        translateY: -50        
-      });
-    }
-}
+    const reset = (): void => {
+      if (zoomer.value !== null) {
+        // extends PinchScrollZoom
+        (zoomer.value as any).setData({
+          scale: 1,
+          originX: 150,
+          originY: 200,
+          translateX: -100,
+          translateY: -50,
+        });
+      }
+    };
+
+    return {
+      within,
+      minScale,
+      maxScale,
+      scale,
+      originX,
+      originY,
+      translateX,
+      translateY,
+      eventName,
+      eventData,
+      zoomer,
+      onEvent,
+      reset,
+    };
+  },
+});
 </script>

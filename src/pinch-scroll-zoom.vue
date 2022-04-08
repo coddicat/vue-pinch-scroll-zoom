@@ -1,388 +1,505 @@
 <template>
   <div
+    ref="el"
     class="pinch-scroll-zoom"
     :class="componentClass"
+    :style="componentStyle"
     @mousedown="startDrag"
     @mousemove="doDrag"
-    :style="componentStyle"
   >
     <div
       ref="content"
       class="pinch-scroll-zoom__content"
       :style="containerStyle"
     >
-      <slot></slot>
+      <slot />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { throttle, debounce, DebouncedFunc } from "lodash";
-import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis";
-import { PinchScrollZoomEmitData, PinchScrollZoomSetData } from "./types";
+import {
+  computed,
+  defineComponent,
+  watch,
+  ref,
+  onMounted,
+  onUnmounted,
+} from 'vue'
+import PinchScrollZoomAxis from './pinch-scroll-zoom-axis'
+import { PinchScrollZoomEmitData } from './types'
+import { throttle, debounce } from "lodash";
 
-@Component({
-  name: "PinchScrollZoom",
-})
-export default class PinchScrollZoom extends Vue {
-  @Prop({ required: false }) private contentWidth!: number | undefined;
-  @Prop({ required: false }) private contentHeight!: number | undefined;
-  @Prop({ required: true }) private width!: number;
-  @Prop({ required: true }) private height!: number;
-  @Prop({ required: false }) private originX!: number | undefined;
-  @Prop({ required: false }) private originY!: number | undefined;
-  @Prop({ required: false, default: 0 }) private translateX!: number;
-  @Prop({ required: false, default: 0 }) private translateY!: number;
-  @Prop({ required: false, default: 1 }) private scale!: number;
+export default defineComponent({
+  name: 'PinchScrollZoom',
+  props: {
+    contentWidth: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    contentHeight: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    width: {
+      type: Number,
+      required: true,
+    },
+    height: {
+      type: Number,
+      required: true,
+    },
+    originX: {
+      type: Number,
+      required: false,
+      default: undefined,
+    },
+    originY: {
+      type: Number,
+      required: false,
+      default: undefined,
+    },
+    translateX: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    translateY: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    scale: {
+      type: Number,
+      required: false,
+      default: 1,
+    },
+    throttleDelay: {
+      type: Number,
+      required: false,
+      default: 25,
+    },
+    within: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    minScale: {
+      type: Number,
+      required: false,
+      default: 0.3,
+    },
+    maxScale: {
+      type: Number,
+      required: false,
+      default: 5,
+    },
+    wheelVelocity: {
+      type: Number,
+      required: false,
+      default: 0.001,
+    },
+    draggable: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+  },
+  emits: ['stopDrag', 'startDrag', 'dragging', 'scaling', 'onImageLoaded'],
+  setup (props, ctx) {
+    const el = ref<HTMLDivElement>()
+    let touch1 = false
+    let touch2 = false
+    let currentScale = ref(1)
+    let startScale = 1
 
-  @Prop({ required: false, default: 25 }) private throttleDelay!: number;
-  @Prop({ required: false, default: true }) private within!: boolean;
-  @Prop({ required: false, default: 0.3 }) private minScale!: number;
-  @Prop({ required: false, default: 5 }) private maxScale!: number;
-  @Prop({ required: false, default: 0.001 }) private wheelVelocity!: number;
-  @Prop({ required: false, default: true }) private draggable!: boolean;
+    const axisX = new PinchScrollZoomAxis(
+      props.width,
+      props.originX,
+      props.translateX,
+      props.contentWidth
+    )
+    const axisY = new PinchScrollZoomAxis(
+      props.height,
+      props.originY,
+      props.translateY,
+      props.contentHeight
+    )
+    let zoomIn = ref(false)
+    let zoomOut = ref(false)
+    let stopDragListener = false
+    let startDragListener = false
+    let draggingListener = false
+    let scalingListener = false
+    onMounted(() => {
+      currentScale.value = props.scale
+      startScale = props.scale
+      window.addEventListener('mouseup', stopDrag)
+      if (el.value) {
+        el.value.addEventListener('touchstart', startDrag)
+        el.value.addEventListener('touchmove', doDrag)
+        el.value.addEventListener('wheel', doWheelScale)
+      }
+      stopDragListener = !!ctx.attrs.stopDrag
+      startDragListener = !!ctx.attrs.startDrag
+      draggingListener = !!ctx.attrs.dragging
+      scalingListener = !!ctx.attrs.scaling
 
-  private touch1: boolean = false;
-  private touch2: boolean = false;
-  private currentScale: number = this.scale;
-  private startScale: number = this.scale;
-  private axisX: PinchScrollZoomAxis = new PinchScrollZoomAxis(
-    this.width,
-    this.originX,
-    this.translateX,
-    this.contentWidth
-  );
-  private axisY: PinchScrollZoomAxis = new PinchScrollZoomAxis(
-    this.height,
-    this.originY,
-    this.translateY,
-    this.contentHeight
-  );
-  private throttleDoDrag: DebouncedFunc<any> = throttle(
-    (this as any).doDragEvent,
-    this.throttleDelay
-  );
-  private stopScaling: DebouncedFunc<any> = debounce(
-    (this as any).doStopScalingEvent,
-    200
-  );
-  private zoomIn: boolean = false;
-  private zoomOut: boolean = false;
-  private stopDragListener: boolean = false;
-  private startDragListener: boolean = false;
-  private draggingListener: boolean = false;
-  private scalingListener: boolean = false;
+      centerImage()
+      updateAxis()
+    })
 
-  public get componentStyle(): object {
-    return {
-      width: `${this.width}px`,
-      height: `${this.height}px`,
-    };
-  }
+    const centerImage = () => {
+      const imageEl = el.value?.querySelector('img')
+      if (!imageEl) return
 
-  public get componentClass(): object {
-    return {
-      "pinch-scroll-zoom--zoom-out": this.zoomOut,
-      "pinch-scroll-zoom--zoom-in": this.zoomIn,
-    };
-  }
+      imageEl.onload = () => {
+        if (imageEl.width === imageEl.height) {
+          let scaleRatio = 0
+          let targetX = (props.width - imageEl.width) / 2
+          let targetY = (props.height - imageEl.height) / 2
 
-  public get containerStyle(): object {
-    const x = `${this.axisX.point}px`;
-    const y = `${this.axisY.point}px`;
-    const translate = `translate(${x}, ${y}) scale(${this.currentScale})`;
-    const transformOrigin = `${this.axisX.origin}px ${this.axisY.origin}px`;
+          if (props.width < props.height) {
+            scaleRatio = props.width / imageEl.width
+          } else {
+            scaleRatio = props.height / imageEl.height
+          }
 
-    return {
-      transform: translate,
-      "transform-origin": transformOrigin,
-    };
-  }
+          axisY.setPoint(targetY * scaleRatio)
+          axisX.setPoint(targetX * scaleRatio)
+          currentScale.value = scaleRatio
+          updateAxis()
+          ctx.emit('onImageLoaded', true)
+          return
+        }
+        if (imageEl.width > imageEl.height) {
+          const targetY = (props.height - imageEl.height) / 2
+          const targetX = ((props.width - imageEl.width) / 2) * 1
+          axisY.setPoint(targetY)
+          axisX.setPoint(targetX)
+          updateAxis()
+          ctx.emit('onImageLoaded', true)
+          return
+        }
+        if (imageEl.height > imageEl.width) {
+          let scaleRatio = props.height / imageEl.height
+          let targetX = ((props.width - imageEl.width) / 2) * scaleRatio
+          let targetY = ((props.height - imageEl.height) / 2) * scaleRatio
+          axisY.setPoint(targetY)
+          axisX.setPoint(targetX)
+          currentScale.value = scaleRatio
+          updateAxis()
+          ctx.emit('onImageLoaded', true)
+          return
+        }
 
-  @Watch("scale")
-  scaleChanged(val: number): void {
-    this.submitScale(val);
-  }
-
-  @Watch("translateX")
-  translateXchanged(val: number): void {
-    this.axisX.setPoint(val);
-  }
-
-  @Watch("translateY")
-  translateYchanged(val: number): void {
-    this.axisY.setPoint(val);
-  }
-
-  @Watch("originX")
-  originXchanged(val: number): void {
-    this.axisX.setOrigin(val);
-  }
-  @Watch("originY")
-  originYchanged(val: number): void {
-    this.axisY.setOrigin(val);
-  }
-  @Watch("within")
-  withinChanged(): void {
-    this.checkWithin();
-  }
-
-  public setData(data: PinchScrollZoomSetData): void {
-    this.currentScale = data.scale;
-    this.axisX.setPoint(data.translateX);
-    this.axisY.setPoint(data.translateY);
-    this.axisX.setOrigin(data.originX);
-    this.axisY.setOrigin(data.originY);
-  }
-
-  public getEmitData(): PinchScrollZoomEmitData {
-    return {
-      x: this.axisX.point,
-      y: this.axisY.point,
-      scale: this.currentScale,
-      originX: this.axisX.origin,
-      originY: this.axisY.origin,
-      translateX: this.axisX.point,
-      translateY: this.axisY.point,
-    };
-  }
-
-  public stopDrag(): void {
-    this.touch1 = false;
-    this.touch2 = false;
-    this.zoomIn = false;
-    this.zoomOut = false;
-    if (this.stopDragListener) {
-      this.$emit("stopDrag", this.getEmitData());
-    }
-  }
-
-  public startDrag(touchEvent: any): void {
-    if (!this.draggable) return;
-
-    if (!touchEvent.touches) {
-      touchEvent.touches = [
-        {
-          clientX: touchEvent.clientX,
-          clientY: touchEvent.clientY,
-        },
-      ];
-    }
-    if (touchEvent.touches.length == 0) {
-      this.stopDrag();
-      return;
-    }
-    const clientX1 = this.getBoundingTouchClientX(touchEvent.touches[0]);
-    const clientY1 = this.getBoundingTouchClientY(touchEvent.touches[0]);
-    if (touchEvent.touches.length > 1) {
-      this.touch1 = true;
-      this.touch2 = true;
-      this.startScale = this.currentScale;
-
-      const clientX2 = this.getBoundingTouchClientX(touchEvent.touches[1]);
-      const clientY2 = this.getBoundingTouchClientY(touchEvent.touches[1]);
-
-      this.axisX.pinch(clientX1, clientX2, this.currentScale);
-      this.axisY.pinch(clientY1, clientY2, this.currentScale);
-    } else {
-      this.touch1 = true;
-      this.touch2 = false;
-      this.axisX.touch(clientX1);
-      this.axisY.touch(clientY1);
-    }
-
-    if (this.startDragListener) {
-      this.$emit("startDrag", this.getEmitData());
-    }
-  }
-
-  public doDrag(touchEvent: any): void {
-    if (!this.draggable) return;
-
-    this.throttleDoDrag(touchEvent);
-  }
-
-  public doStopScalingEvent(): void {
-    this.zoomIn = false;
-    this.zoomOut = false;
-  }
-
-  public doDragEvent(touchEvent: any): void {
-    if (!this.touch1 && !this.touch2) return;
-    if (!touchEvent.touches) {
-      touchEvent.touches = [
-        {
-          clientX: touchEvent.clientX,
-          clientY: touchEvent.clientY,
-        },
-      ];
-    }
-    if (touchEvent.touches.length === 0) return;
-
-    if (this.touch1 && this.touch2 && touchEvent.touches.length === 1)
-      this.startDrag(touchEvent);
-
-    if (!this.touch1 || (!this.touch2 && touchEvent.touches.length === 2))
-      this.startDrag(touchEvent);
-
-    if (this.touch1 && this.touch2) {
-      this.axisX.dragPinch(
-        this.getBoundingTouchClientX(touchEvent.touches[0]),
-        this.getBoundingTouchClientX(touchEvent.touches[1])
-      );
-      this.axisY.dragPinch(
-        this.getBoundingTouchClientY(touchEvent.touches[0]),
-        this.getBoundingTouchClientY(touchEvent.touches[1])
-      );
-    } else {
-      this.axisX.dragTouch(this.getBoundingTouchClientX(touchEvent.touches[0]));
-      this.axisY.dragTouch(this.getBoundingTouchClientY(touchEvent.touches[0]));
-    }
-
-    this.doScale(touchEvent);
-    this.submitDrag();
-  }
-
-  public getBoundingTouchClientX(touch: any): number {
-    return touch.clientX - this.$el.getBoundingClientRect().left;
-  }
-
-  public getBoundingTouchClientY(touch: any): number {
-    return touch.clientY - this.$el.getBoundingClientRect().top;
-  }
-
-  public submitDrag(): void {
-    if (this.draggingListener) {
-      this.$emit("dragging", this.getEmitData());
-    }
-  }
-
-  public getDistance(x1: number, y1: number, x2: number, y2: number): number {
-    const sqrDistance = (x1 - x2) ** 2 + (y1 - y2) ** 2;
-    const distance = Math.sqrt(sqrDistance);
-    return distance;
-  }
-
-  public doScale(touchEvent: any): void {
-    if (touchEvent.touches.length < 2 || !this.touch1 || !this.touch2) {
-      this.checkWithin();
-      return;
-    }
-
-    const touch1 = touchEvent.touches[0];
-    const touch2 = touchEvent.touches[1];
-
-    const distance = this.getDistance(
-      this.getBoundingTouchClientX(touch1),
-      this.getBoundingTouchClientY(touch1),
-      this.getBoundingTouchClientX(touch2),
-      this.getBoundingTouchClientY(touch2)
-    );
-
-    const startDistance = this.getDistance(
-      this.axisX.start1,
-      this.axisY.start1,
-      this.axisX.start2,
-      this.axisY.start2
-    );
-
-    const scale = this.startScale * (distance / startDistance);
-    this.submitScale(scale);
-  }
-
-  public submitScale(scale: number): void {
-    if (
-      (scale >= this.minScale || this.currentScale < scale) &&
-      (scale <= this.maxScale || this.currentScale > scale)
-    ) {
-      if (this.currentScale != scale) {
-        this.zoomIn = this.currentScale < scale;
-        this.zoomOut = this.currentScale > scale;
-        this.currentScale = scale;
-        this.stopScaling();
+        ctx.emit('onImageLoaded', false)
       }
     }
-    this.checkWithin();
-    if (this.scalingListener) {
-      this.$emit("scaling", this.getEmitData());
+    onUnmounted(() => {
+      window.removeEventListener('mouseup', stopDrag)
+      if (el.value) {
+        el.value.removeEventListener('touchstart', startDrag)
+        el.value.removeEventListener('touchmove', doDrag)
+        el.value.removeEventListener('wheel', doWheelScale)
+      }
+    })
+    const componentStyle = computed(() => {
+      return {
+        width: `${props.width}px`,
+        height: `${props.height}px`,
+      }
+    })
+    const componentClass = computed(() => {
+      return {
+        'pinch-scroll-zoom--zoom-in': zoomIn,
+        'pinch-scroll-zoom--zoom-out': zoomOut,
+      }
+    })
+    const xPoint = ref(axisX.point)
+    const yPoint = ref(axisY.point)
+    const xOrigin = ref(axisX.origin)
+    const yOrigin = ref(axisY.origin)
+    const updateAxis = () => {
+      xPoint.value = axisX.point
+      yPoint.value = axisY.point
+      xOrigin.value = axisX.origin
+      yOrigin.value = axisY.origin
     }
-  }
-
-  public doWheelScale(event: any): void {
-    event.preventDefault();
-    const clientX = this.getBoundingTouchClientX(event);
-    const clientY = this.getBoundingTouchClientY(event);
-    this.axisX.pinch(clientX, clientX, this.currentScale);
-    this.axisY.pinch(clientY, clientY, this.currentScale);
-
-    const factor = 1 - event.deltaY * this.wheelVelocity;
-    const scale = this.currentScale * factor;
-
-    this.submitScale(scale);
-  }
-
-  public checkWithin(): void {
-    if (!this.within) {
-      return;
+    const containerStyle = computed(() => {
+      const x = `${xPoint.value}px`
+      const y = `${yPoint.value}px`
+      const translate = `translate(${x}, ${y}) scale(${currentScale.value})`
+      const transformOrigin = `${xOrigin.value}px ${yOrigin.value}px`
+      return {
+        transform: translate,
+        'transform-origin': transformOrigin,
+      }
+    })
+    const getEmitData = (): PinchScrollZoomEmitData => {
+      return {
+        x: axisX.point,
+        y: axisY.point,
+        scale: currentScale.value,
+        originX: axisX.origin,
+        originY: axisY.origin,
+        translateX: axisX.point,
+        translateY: axisY.point,
+      }
     }
-
-    this.axisY.checkAndResetToWithin(this.currentScale);
-    this.axisX.checkAndResetToWithin(this.currentScale);
-  }
-
-  mounted() {
-    window.addEventListener("mouseup", this.stopDrag);
-    this.$el.addEventListener("touchstart", this.startDrag);
-    this.$el.addEventListener("touchmove", this.doDrag);
-    this.$el.addEventListener("wheel", this.doWheelScale);
-
-    this.stopDragListener = !!this.$listeners.stopDrag;
-    this.startDragListener = !!this.$listeners.startDrag;
-    this.draggingListener = !!this.$listeners.dragging;
-    this.scalingListener = !!this.$listeners.scaling;
-  }
-
-  beforeDestroy() {
-    window.removeEventListener("mouseup", this.stopDrag);
-    this.$el.removeEventListener("touchstart", this.startDrag);
-    this.$el.removeEventListener("touchmove", this.doDrag);
-    this.$el.removeEventListener("wheel", this.doWheelScale);
-  }
-}
+    const stopDrag = (): void => {
+      touch1 = false
+      touch2 = false
+      zoomIn.value = false
+      zoomOut.value = false
+      if (stopDragListener) {
+        ctx.emit('stopDrag', getEmitData())
+      }
+    }
+    const getBoundingTouchClientX = (touch: any): number => {
+      if (el.value) {
+        return touch.clientX - el.value.getBoundingClientRect().left
+      }
+      return 0
+    }
+    const getBoundingTouchClientY = (touch: any): number => {
+      if (el.value) {
+        return touch.clientY - el.value.getBoundingClientRect().top
+      }
+      return 0
+    }
+    const startDrag = (touchEvent: any): void => {
+      if (!props.draggable) {
+        return
+      }
+      if (!touchEvent.touches) {
+        touchEvent.touches = [
+          {
+            clientX: touchEvent.clientX,
+            clientY: touchEvent.clientY,
+          },
+        ]
+      }
+      if (touchEvent.touches.length == 0) {
+        stopDrag()
+        return
+      }
+      const clientX1 = getBoundingTouchClientX(touchEvent.touches[0])
+      const clientY1 = getBoundingTouchClientY(touchEvent.touches[0])
+      if (touchEvent.touches.length > 1) {
+        touch1 = true
+        touch2 = true
+        startScale = currentScale.value
+        const clientX2 = getBoundingTouchClientX(touchEvent.touches[1])
+        const clientY2 = getBoundingTouchClientY(touchEvent.touches[1])
+        axisX.pinch(clientX1, clientX2, currentScale.value)
+        axisY.pinch(clientY1, clientY2, currentScale.value)
+      } else {
+        touch1 = true
+        touch2 = false
+        axisX.touch(clientX1)
+        axisY.touch(clientY1)
+      }
+      if (startDragListener) {
+        ctx.emit('startDrag', getEmitData())
+      }
+    }
+    const doDrag = (touchEvent: any): void => {
+      if (!props.draggable) return
+      throttleDoDrag(touchEvent)
+    }
+    const doStopScalingEvent = (): void => {
+      zoomIn.value = false
+      zoomOut.value = false
+    }
+    const doDragEvent = (touchEvent: any): void => {
+      if (!touch1 && !touch2) return
+      if (!touchEvent.touches) {
+        touchEvent.touches = [
+          {
+            clientX: touchEvent.clientX,
+            clientY: touchEvent.clientY,
+          },
+        ]
+      }
+      if (touchEvent.touches.length === 0) return
+      if (touch1 && touch2 && touchEvent.touches.length === 1) {
+        startDrag(touchEvent)
+      }
+      if (!touch1 || (!touch2 && touchEvent.touches.length === 2)) {
+        startDrag(touchEvent)
+      }
+      if (touch1 && touch2) {
+        axisX.dragPinch(
+          getBoundingTouchClientX(touchEvent.touches[0]),
+          getBoundingTouchClientX(touchEvent.touches[1])
+        )
+        axisY.dragPinch(
+          getBoundingTouchClientY(touchEvent.touches[0]),
+          getBoundingTouchClientY(touchEvent.touches[1])
+        )
+      } else {
+        axisX.dragTouch(getBoundingTouchClientX(touchEvent.touches[0]))
+        axisY.dragTouch(getBoundingTouchClientY(touchEvent.touches[0]))
+      }
+      updateAxis()
+      doScale(touchEvent)
+      submitDrag()
+    }
+    const throttleDoDrag = throttle(doDragEvent, props.throttleDelay)
+    const stopScaling = debounce(doStopScalingEvent, 200)
+    const submitDrag = (): void => {
+      updateAxis()
+      if (draggingListener) {
+        ctx.emit('dragging', getEmitData())
+      }
+    }
+    const getDistance = (
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number
+    ): number => {
+      const sqrDistance = (x1 - x2) ** 2 + (y1 - y2) ** 2
+      const distance = Math.sqrt(sqrDistance)
+      return distance
+    }
+    const doScale = (touchEvent: any): void => {
+      if (touchEvent.touches.length < 2 || !touch1 || !touch2) {
+        checkWithin()
+        return
+      }
+      const t1 = touchEvent.touches[0]
+      const t2 = touchEvent.touches[1]
+      const distance = getDistance(
+        getBoundingTouchClientX(t1),
+        getBoundingTouchClientY(t1),
+        getBoundingTouchClientX(t2),
+        getBoundingTouchClientY(t2)
+      )
+      const startDistance = getDistance(
+        axisX.start1,
+        axisY.start1,
+        axisX.start2,
+        axisY.start2
+      )
+      const scale = startScale * (distance / startDistance)
+      submitScale(scale)
+    }
+    const submitScale = (scale: number): void => {
+      if (
+        (scale >= props.minScale || currentScale.value < scale) &&
+        (scale <= props.maxScale || currentScale.value > scale)
+      ) {
+        if (currentScale.value != scale) {
+          zoomIn.value = currentScale.value < scale
+          zoomOut.value = currentScale.value > scale
+          currentScale.value = scale
+          stopScaling()
+        }
+      }
+      updateAxis()
+      checkWithin()
+      if (scalingListener) {
+        ctx.emit('scaling', getEmitData())
+      }
+    }
+    const doWheelScale = (event: any): void => {
+      event.preventDefault()
+      const clientX = getBoundingTouchClientX(event)
+      const clientY = getBoundingTouchClientY(event)
+      axisX.pinch(clientX, clientY, currentScale.value)
+      axisY.pinch(clientX, clientY, currentScale.value)
+      const factor = 1 - event.deltaY * props.wheelVelocity
+      const scale = currentScale.value * factor
+      submitScale(scale)
+    }
+    const checkWithin = (): void => {
+      if (!props.within) {
+        return
+      }
+      axisX.checkAndResetToWithin(currentScale.value)
+      axisY.checkAndResetToWithin(currentScale.value)
+    }
+    watch(
+      () => props.scale,
+      (val: number) => {
+        submitScale(val)
+      }
+    )
+    watch(
+      () => props.translateX,
+      (val: number) => {
+        axisX.setPoint(val)
+      }
+    )
+    watch(
+      () => props.translateY,
+      (val: number) => {
+        axisY.setPoint(val)
+      }
+    )
+    watch(
+      () => props.originX,
+      (val: any) => {
+        axisX.setOrigin(val)
+      }
+    )
+    watch(
+      () => props.originY,
+      (val: any) => {
+        axisY.setOrigin(val)
+      }
+    )
+    watch(
+      () => props.within,
+      () => {
+        checkWithin()
+      }
+    )
+    return {
+      componentStyle,
+      componentClass,
+      containerStyle,
+      startDrag,
+      doDrag,
+      el,
+      currentScale,
+    }
+  },
+})
 </script>
 
-<style lang="scss">
+<style>
 .pinch-scroll-zoom {
   position: relative;
   touch-action: none;
   user-select: none;
   user-zoom: none;
   overflow: hidden;
-  :active {
-    cursor: all-scroll;
-  }
-
-  &--zoom-in {
-    cursor: zoom-in;
-  }
-
-  &--zoom-out {
-    cursor: zoom-out;
-  }
-
-  &__content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    img {
-      -webkit-user-drag: none;
-      -khtml-user-drag: none;
-      -moz-user-drag: none;
-      -o-user-drag: none;
-    }
-  }
+}
+.pinch-scroll-zoom :active {
+  cursor: all-scroll;
+}
+.pinch-scroll-zoom--zoom-in {
+  cursor: zoom-in;
+}
+.pinch-scroll-zoom--zoom-out {
+  cursor: zoom-out;
+}
+.pinch-scroll-zoom__content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.pinch-scroll-zoom__content img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
 }
 </style>
