@@ -54,22 +54,10 @@
 </template>
 
 <script lang="ts">
+import { PinchScrollZoomEmitData, PinchScrollZoomRef } from "@/entry.esm";
 import PinchScrollZoom from "@/pinch-scroll-zoom.vue";
-import { PinchScrollZoomEmitData } from "@/types";
 
 import { defineComponent, ref } from "vue";
-
-export type PinchScrollZoomSetData = {
-  scale: number;
-  originX: number;
-  originY: number;
-  translateX: number;
-  translateY: number;
-};
-
-export type PinchScrollZoomRef = HTMLElement & {
-  setData: (data: PinchScrollZoomSetData) => void;
-};
 
 export default defineComponent({
    inheritAttrs: false,

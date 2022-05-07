@@ -27,8 +27,8 @@ import {
   onUnmounted,
 } from "vue";
 import PinchScrollZoomAxis from "./pinch-scroll-zoom-axis";
-import { PinchScrollZoomEmitData, PinchScrollZoomSetData } from "./types";
 import { throttle, debounce } from "lodash";
+import { PinchScrollZoomEmitData, PinchScrollZoomSetData } from "./entry.esm";
 
 export default defineComponent({
   name: "PinchScrollZoom",

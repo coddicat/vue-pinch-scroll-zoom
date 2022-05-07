@@ -8,7 +8,7 @@ https://vue-pinch-scroll-zoom.coddicat.com/
 
 ## Installation
 ```
-npm i @coddicat/vue-pinch-scroll-zoom
+npm i @coddicat/vue3-pinch-scroll-zoom
 ```
 
 ## Usage
@@ -29,7 +29,7 @@ template:
 type script:
 ```ts
 import { Component, Vue } from "vue-property-decorator";
-import PinchScrollZoom, { PinchScrollZoomEmitData } from "@coddicat/vue-pinch-scroll-zoom";
+import PinchScrollZoom, { PinchScrollZoomEmitData, PinchScrollZoomRef } from "@coddicat/vue3-pinch-scroll-zoom";
 
 @Component({
   name: "PinchScrollZoomExample",
@@ -43,7 +43,7 @@ export default class PinchScrollZoomExample extends Vue {
     console.log(e);
   },
   public reset() {
-    (this.$refs.zoomer as PinchScrollZoom).setData({
+    (this.$refs.zoomer as PinchScrollZoomRef).setData({
       scale: 1,
       originX: 0,
       originY: 0,

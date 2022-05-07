@@ -1,4 +1,25 @@
 import { App, Plugin } from 'vue';
+export interface PinchScrollZoomEmitData {
+  x: number;
+  y: number;
+  scale: number;
+  originX: number;
+  originY: number;
+  translateX: number,
+  translateY: number
+}
+
+export interface PinchScrollZoomSetData {
+  scale: number;
+  originX: number;
+  originY: number;
+  translateX: number,
+  translateY: number
+}
+
+export type PinchScrollZoomRef = HTMLElement & {
+  setData: (data: PinchScrollZoomSetData) => void;
+};
 
 // Import vue component
 import component from '@/pinch-scroll-zoom.vue';

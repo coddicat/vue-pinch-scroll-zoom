@@ -92,7 +92,7 @@ if (!argv.format || argv.format === 'es') {
     input: './src/entry.esm.ts',
     external,
     output: {
-      file: 'dist/pinch-scroll-zoom.esm.js',
+      file: 'dist/vue3-pinch-scroll-zoom.esm.js',
       format: 'esm',
       exports: 'named',
     },
@@ -131,7 +131,7 @@ if (!argv.format || argv.format === 'cjs') {
     external,
     output: {
       compact: true,
-      file: 'dist/pinch-scroll-zoom.ssr.js',
+      file: 'dist/vue3-pinch-scroll-zoom.ssr.js',
       format: 'cjs',
       name: 'PinchScrollZoom',
       exports: 'auto',
@@ -154,7 +154,7 @@ if (!argv.format || argv.format === 'iife') {
     external,
     output: {
       compact: true,
-      file: 'dist/pinch-scroll-zoom.min.js',
+      file: 'dist/vue3-pinch-scroll-zoom.min.js',
       format: 'iife',
       name: 'PinchScrollZoom',
       exports: 'auto',
