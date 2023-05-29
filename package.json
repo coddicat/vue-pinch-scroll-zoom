@@ -1,6 +1,6 @@
 {
   "name": "@coddicat/vue-pinch-scroll-zoom",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "Vue component enabling scroll and zoom functionalities for content, leveraging mouse interactions on desktop and two-finger pinch gestures on mobile devices",
   "author": "Rodion Shlomo Solomonyk",
   "homepage": "https://github.com/coddicat/vue-pinch-scroll-zoom",

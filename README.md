@@ -7,7 +7,7 @@ Please ensure that you are using this version of Vue or later for optimal perfor
 We will continue to maintain and update this component to support later versions of Vue as they become available.
 
 #### example:
-<img src="https://github.com/coddicat/vue-pinch-scroll-zoom/blob/main/example/example.gif" width="250"/>
+<img src="https://github.com/coddicat/vue-pinch-scroll-zoom/blob/main/example.gif" width="250"/>
 
 ## Installation
 ```
