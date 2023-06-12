@@ -321,8 +321,14 @@ onBeforeUnmount(() => {
 });
 
 watch(() => props.scale, submitScale);
-watch(() => props.translateX, state.axisX.setPoint);
-watch(() => props.translateY, state.axisY.setPoint);
+watch(
+  () => props.translateX,
+  (v: number) => state.axisX.setPoint(v)
+);
+watch(
+  () => props.translateY,
+  (v: number) => state.axisY.setPoint(v)
+);
 watch(
   () => props.originX,
   (val?: number) => state.axisX.setOrigin(val ?? 0)
@@ -331,7 +337,10 @@ watch(
   () => props.originY,
   (val?: number) => state.axisY.setOrigin(val ?? 0)
 );
-watch(() => props.within, checkWithin);
+watch(
+  () => props.within,
+  () => checkWithin()
+);
 </script>
 
 <template>
