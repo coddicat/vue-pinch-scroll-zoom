@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive /*, onMounted*/ } from 'vue';
 import PinchScrollZoom from './components/pinch-scroll-zoom.vue';
 import {
   PinchScrollZoomEmitData,
@@ -11,46 +11,58 @@ const within = ref(false);
 const minScale = ref(0.3);
 const maxScale = ref(5);
 
-const state = reactive({
-  scale: 2,
-  originX: 150,
-  originY: 200,
-  translateX: -100,
-  translateY: -50,
-  eventName: 'N/A',
-  eventData: {} as PinchScrollZoomEmitData
-});
+const state = reactive<{
+  scale?: number;
+  originX?: number;
+  originY?: number;
+  translateX?: number;
+  translateY?: number;
+  eventName?: string;
+  eventData?: PinchScrollZoomEmitData;
+}>({});
 
 function onEvent(name: string, e: PinchScrollZoomEmitData): void {
   state.eventName = name;
   state.eventData = e;
-  state.scale = e.scale;
-  state.originX = e.originX;
-  state.originY = e.originY;
-  state.translateX = e.translateX;
-  state.translateY = e.translateY;
+  mapStateProps(e);
+}
+
+function mapStateProps(zommData: PinchScrollZoomEmitData) {
+  state.scale = zommData.scale;
+  state.originX = zommData.originX;
+  state.originY = zommData.originY;
+  state.translateX = zommData.translateX;
+  state.translateY = zommData.translateY;
 }
 
 function reset(): void {
-  zoomer.value?.setData({
-    scale: 1,
-    originX: 150,
-    originY: 200,
-    translateX: -100,
-    translateY: -50
-  });
+  if (!zoomer.value) {
+    throw new Error("PinchScrollZoom wasn't added");
+  }
+  // const newState = zoomer.value.setData({
+  //   // scale: 1
+  //   // originX: 250, // to centralize: content-width / 2
+  //   // originY: 250, // to centralize: content-height / 2
+  //   // translateX: -100, // to centralize: (width - content-width) / 2
+  //   // translateY: -50 // to centralize: (height - content-height) / 2
+  // });
+  // mapStateProps(newState);
 }
+
+// onMounted(() => reset());
 </script>
 
 <template>
   <div>
-    scale: {{ state.scale.toFixed(2) }} <br />
-    origin: ({{ state.originX.toFixed(2) }}, {{ state.originY.toFixed(2) }})
+    scale: {{ state.scale?.toFixed(2) }} <br />
+    origin: ({{ state.originX?.toFixed(2) }}, {{ state.originY?.toFixed(2) }})
     <br />
-    translate: ({{ state.translateX.toFixed(2) }},
-    {{ state.translateY.toFixed(2) }}) <br />
+    translate: ({{ state.translateX?.toFixed(2) }},
+    {{ state.translateY?.toFixed(2) }}) <br />
     <PinchScrollZoom
       ref="zoomer"
+      centred
+      key-actions
       :width="300"
       :height="400"
       :within="within"

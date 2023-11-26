@@ -4,7 +4,9 @@ import PinchScrollZoomAxis from './pinch-scroll-zoom-axis';
 import {
   PinchScrollZoomExposed,
   PinchScrollZoomEmitData,
-  PinchScrollZoomSetData
+  PinchScrollZoomSetData,
+  PinchScrollZoomKeyAction,
+  PinchScrollZoomDefaultControls
 } from './types';
 import {
   computed,
@@ -33,6 +35,12 @@ const props = withDefaults(
     maxScale?: number;
     wheelVelocity?: number;
     draggable?: boolean;
+    centred?: boolean;
+    keyActions?: boolean;
+    tabindex?: number;
+    keyZoomVelocity?: number;
+    keyMoveVelocity?: number;
+    keyControls?: Record<string, PinchScrollZoomKeyAction>;
   }>(),
   {
     translateX: 0,
@@ -43,10 +51,18 @@ const props = withDefaults(
     minScale: 0.3,
     maxScale: 5,
     wheelVelocity: 0.001,
-    draggable: true
+    draggable: true,
+    keyActions: false,
+    keyZoomVelocity: 0.2,
+    keyMoveVelocity: 10
   }
 );
-
+const controls = computed(
+  () => props.keyControls ?? PinchScrollZoomDefaultControls
+);
+const fixedTabindex = computed(() =>
+  props.tabindex === undefined && props.keyActions ? 0 : props.tabindex
+);
 const $el = ref<HTMLDivElement>();
 
 const throttleDoDrag = throttle(doDragEvent, props.throttleDelay);
@@ -72,6 +88,10 @@ const state = reactive({
     contentSize: props.contentHeight
   })
 });
+
+if (props.centred) {
+  centralize();
+}
 
 const componentClass = computed(() => ({
   'pinch-scroll-zoom--zoom-out': state.zoomOut,
@@ -102,16 +122,20 @@ const emit = defineEmits<{
   (event: 'scaling', payload: PinchScrollZoomEmitData): void;
 }>();
 
-defineExpose({
-  setData
-} as PinchScrollZoomExposed);
+defineExpose<PinchScrollZoomExposed>({
+  setData,
+  centralize,
+  manualMove,
+  manualZoom
+});
 
-function setData(data: PinchScrollZoomSetData): void {
+function setData(data: PinchScrollZoomSetData): PinchScrollZoomEmitData {
   state.currentScale = data.scale;
   state.axisX.setPoint(data.translateX);
   state.axisY.setPoint(data.translateY);
   state.axisX.setOrigin(data.originX);
   state.axisY.setOrigin(data.originY);
+  return getEmitData();
 }
 
 function getEmitData(): PinchScrollZoomEmitData {
@@ -156,15 +180,15 @@ function startDrag(touches: { clientX: number; clientY: number }[]): void {
     stopDrag();
     return;
   }
-  const clientX1 = getBoundingTouchClientX(touches[0]);
-  const clientY1 = getBoundingTouchClientY(touches[0]);
+  const clientX1 = getBoundingTouchClientX(touches[0].clientX);
+  const clientY1 = getBoundingTouchClientY(touches[0].clientY);
   if (touches.length > 1) {
     state.touch1 = true;
     state.touch2 = true;
     state.startScale = state.currentScale;
 
-    const clientX2 = getBoundingTouchClientX(touches[1]);
-    const clientY2 = getBoundingTouchClientY(touches[1]);
+    const clientX2 = getBoundingTouchClientX(touches[1].clientX);
+    const clientY2 = getBoundingTouchClientY(touches[1].clientY);
 
     state.axisX.pinch(clientX1, clientX2, state.currentScale);
     state.axisY.pinch(clientY1, clientY2, state.currentScale);
@@ -197,16 +221,16 @@ function doDragEvent(touches: { clientX: number; clientY: number }[]): void {
 
   if (state.touch1 && state.touch2) {
     state.axisX.dragPinch(
-      getBoundingTouchClientX(touches[0]),
-      getBoundingTouchClientX(touches[1])
+      getBoundingTouchClientX(touches[0].clientX),
+      getBoundingTouchClientX(touches[1].clientX)
     );
     state.axisY.dragPinch(
-      getBoundingTouchClientY(touches[0]),
-      getBoundingTouchClientY(touches[1])
+      getBoundingTouchClientY(touches[0].clientY),
+      getBoundingTouchClientY(touches[1].clientY)
     );
   } else {
-    state.axisX.dragTouch(getBoundingTouchClientX(touches[0]));
-    state.axisY.dragTouch(getBoundingTouchClientY(touches[0]));
+    state.axisX.dragTouch(getBoundingTouchClientX(touches[0].clientX));
+    state.axisY.dragTouch(getBoundingTouchClientY(touches[0].clientY));
   }
 
   doScale(touches);
@@ -222,12 +246,12 @@ function doStopScalingEvent(): void {
   state.zoomOut = false;
 }
 
-function getBoundingTouchClientX(touch: { clientX: number }): number {
-  return touch.clientX - $el.value!.getBoundingClientRect().left;
+function getBoundingTouchClientX(clientX: number): number {
+  return clientX - $el.value!.getBoundingClientRect().left;
 }
 
-function getBoundingTouchClientY(touch: { clientY: number }): number {
-  return touch.clientY - $el.value!.getBoundingClientRect().top;
+function getBoundingTouchClientY(clientY: number): number {
+  return clientY - $el.value!.getBoundingClientRect().top;
 }
 
 function doScale(touches: { clientX: number; clientY: number }[]): void {
@@ -240,10 +264,10 @@ function doScale(touches: { clientX: number; clientY: number }[]): void {
   const touch2 = touches[1];
 
   const distance = getDistance(
-    getBoundingTouchClientX(touch1),
-    getBoundingTouchClientY(touch1),
-    getBoundingTouchClientX(touch2),
-    getBoundingTouchClientY(touch2)
+    getBoundingTouchClientX(touch1.clientX),
+    getBoundingTouchClientY(touch1.clientY),
+    getBoundingTouchClientX(touch2.clientX),
+    getBoundingTouchClientY(touch2.clientY)
   );
 
   const startDistance = getDistance(
@@ -299,10 +323,66 @@ function doTouchDrag(touchEvent: TouchEvent): void {
   throttleDoDrag(touches);
 }
 
+function centralize(): PinchScrollZoomEmitData {
+  setData({
+    scale: state.currentScale,
+    originX: (props.contentWidth ?? props.width) / 2,
+    originY: (props.contentHeight ?? props.height) / 2,
+    translateX: props.contentWidth ? (props.width - props.contentWidth) / 2 : 0,
+    translateY: props.contentHeight
+      ? (props.height - props.contentHeight) / 2
+      : 0
+  });
+  return getEmitData();
+}
+
+function onKeyPress(event: KeyboardEvent): void {
+  if (!props.keyActions) return;
+  event.preventDefault();
+
+  switch (controls.value[event.key]) {
+    case PinchScrollZoomKeyAction.zoomIn:
+      manualZoom(1 + props.keyZoomVelocity);
+      break;
+    case PinchScrollZoomKeyAction.zoomOut:
+      manualZoom(1 - props.keyZoomVelocity);
+      break;
+    case PinchScrollZoomKeyAction.moveUp:
+      manualMove(0, -props.keyMoveVelocity);
+      break;
+    case PinchScrollZoomKeyAction.moveDown:
+      manualMove(0, props.keyMoveVelocity);
+      break;
+    case PinchScrollZoomKeyAction.moveLeft:
+      manualMove(-props.keyMoveVelocity, 0);
+      break;
+    case PinchScrollZoomKeyAction.moveRight:
+      manualMove(props.keyMoveVelocity, 0);
+      break;
+  }
+}
+
+function manualMove(deltaX: number, delatY: number): PinchScrollZoomEmitData {
+  state.axisX.setPoint(state.axisX.point + deltaX);
+  state.axisY.setPoint(state.axisY.point + delatY);
+  emit('dragging', getEmitData());
+  return getEmitData();
+}
+
+function manualZoom(factor: number): PinchScrollZoomEmitData {
+  const clientX = getBoundingTouchClientX(props.width / 2);
+  const clientY = getBoundingTouchClientY(props.height / 2);
+  state.axisX.pinch(clientX, clientX, state.currentScale);
+  state.axisY.pinch(clientY, clientY, state.currentScale);
+  const scale = state.currentScale * factor;
+  submitScale(scale);
+  return getEmitData();
+}
+
 function doWheelScale(event: WheelEvent): void {
   event.preventDefault();
-  const clientX = getBoundingTouchClientX(event);
-  const clientY = getBoundingTouchClientY(event);
+  const clientX = getBoundingTouchClientX(event.clientX);
+  const clientY = getBoundingTouchClientY(event.clientY);
   state.axisX.pinch(clientX, clientX, state.currentScale);
   state.axisY.pinch(clientY, clientY, state.currentScale);
 
@@ -320,6 +400,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('mouseup', stopDrag);
 });
 
+watch(() => props.centred, centralize);
 watch(() => props.scale, submitScale);
 watch(
   () => props.translateX,
@@ -353,6 +434,8 @@ watch(
     @touchstart="startTouchDrag"
     @touchmove="doTouchDrag"
     @wheel="doWheelScale"
+    @keydown="onKeyPress"
+    :tabindex="fixedTabindex"
     :style="componentStyle"
   >
     <div
