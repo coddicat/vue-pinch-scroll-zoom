@@ -9,18 +9,18 @@ export interface PinchScrollZoomEmitData {
 }
 
 export interface PinchScrollZoomSetData {
-  scale: number;
-  originX: number;
-  originY: number;
-  translateX: number;
-  translateY: number;
+  scale?: number;
+  originX?: number;
+  originY?: number;
+  translateX?: number;
+  translateY?: number;
 }
 
 export interface PinchScrollZoomExposed {
   setData: (data: PinchScrollZoomSetData) => PinchScrollZoomEmitData;
   centralize: () => PinchScrollZoomEmitData;
-  manualMove(deltaX: number, delatY: number): PinchScrollZoomEmitData;
-  manualZoom(factor: number): PinchScrollZoomEmitData;
+  manualMove: (deltaX: number, delatY: number) => PinchScrollZoomEmitData;
+  manualZoom: (factor: number) => PinchScrollZoomEmitData;
 }
 
 export enum PinchScrollZoomKeyAction {

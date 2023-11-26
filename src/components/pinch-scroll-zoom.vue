@@ -2,7 +2,6 @@
 import { throttle, debounce } from 'lodash';
 import PinchScrollZoomAxis from './pinch-scroll-zoom-axis';
 import {
-  PinchScrollZoomExposed,
   PinchScrollZoomEmitData,
   PinchScrollZoomSetData,
   PinchScrollZoomKeyAction,
@@ -17,6 +16,13 @@ import {
   watch
 } from 'vue';
 import { getDistance } from './pinch-scroll-zoom-ext';
+
+defineExpose({
+  setData,
+  centralize,
+  manualMove,
+  manualZoom
+});
 
 const props = withDefaults(
   defineProps<{
@@ -122,19 +128,22 @@ const emit = defineEmits<{
   (event: 'scaling', payload: PinchScrollZoomEmitData): void;
 }>();
 
-defineExpose<PinchScrollZoomExposed>({
-  setData,
-  centralize,
-  manualMove,
-  manualZoom
-});
-
 function setData(data: PinchScrollZoomSetData): PinchScrollZoomEmitData {
-  state.currentScale = data.scale;
-  state.axisX.setPoint(data.translateX);
-  state.axisY.setPoint(data.translateY);
-  state.axisX.setOrigin(data.originX);
-  state.axisY.setOrigin(data.originY);
+  if (data.scale !== undefined) {
+    state.currentScale = data.scale;
+  }
+  if (data.translateX !== undefined) {
+    state.axisX.setPoint(data.translateX);
+  }
+  if (data.translateY !== undefined) {
+    state.axisY.setPoint(data.translateY);
+  }
+  if (data.originX !== undefined) {
+    state.axisX.setOrigin(data.originX);
+  }
+  if (data.originY !== undefined) {
+    state.axisY.setOrigin(data.originY);
+  }
   return getEmitData();
 }
 

@@ -1,4 +1,4 @@
-# 4.3.0
+# 4.3.1
 - Added key actions on trigger zooming and moving on key events
 - Added methods: centralize, manualMove, manualZoom
 - New props: 
