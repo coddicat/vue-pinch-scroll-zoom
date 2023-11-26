@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive /*, onMounted*/ } from 'vue';
+import { ref, reactive } from 'vue';
 import PinchScrollZoom from './components/pinch-scroll-zoom.vue';
 import {
   PinchScrollZoomEmitData,
@@ -39,17 +39,12 @@ function reset(): void {
   if (!zoomer.value) {
     throw new Error("PinchScrollZoom wasn't added");
   }
-  // const newState = zoomer.value.setData({
-  //   // scale: 1
-  //   // originX: 250, // to centralize: content-width / 2
-  //   // originY: 250, // to centralize: content-height / 2
-  //   // translateX: -100, // to centralize: (width - content-width) / 2
-  //   // translateY: -50 // to centralize: (height - content-height) / 2
-  // });
-  // mapStateProps(newState);
+  zoomer.value.centralize();
+  const newState = zoomer.value.setData({
+    scale: 1
+  });
+  mapStateProps(newState);
 }
-
-// onMounted(() => reset());
 </script>
 
 <template>

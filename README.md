@@ -95,7 +95,7 @@ the following properties don't support the ".async" modifier
 |throttleDelay|no|rendering delay (milliseconds)|25|
 |draggable|no|draggable of/off|true|
 |centred|no|centralize content in visible area|false|
-|key-actions|no|enable key press events for zooming and moving|false|
+|key-actions|no|enable key press events(focused) for zooming and moving|false|
 |tabindex|no|tabindex attribute for the visible area|0 if keyActions enabled, value is required for key events|
 |key-zoom-velocity|no|zoom velocity when zooming by key events|0.2|
 |key-move-velocity|no|move velocity when moving by key events|10|
