@@ -258,16 +258,17 @@ function doScale(touches: { clientX: number; clientY: number }[]): void {
 }
 
 function submitScale(scale: number): void {
-  if (
-    (scale >= props.minScale || state.currentScale < scale) &&
-    (scale <= props.maxScale || state.currentScale > scale)
-  ) {
-    if (state.currentScale !== scale) {
-      state.zoomIn = state.currentScale < scale;
-      state.zoomOut = state.currentScale > scale;
-      state.currentScale = scale;
-      stopScaling();
-    }
+  if (scale < props.minScale) {
+    scale = props.minScale;
+  }
+  if (scale > props.maxScale) {
+    scale = props.maxScale;
+  }
+  if (state.currentScale !== scale) {
+    state.zoomIn = state.currentScale < scale;
+    state.zoomOut = state.currentScale > scale;
+    state.currentScale = scale;
+    stopScaling();
   }
   checkWithin();
   emit('scaling', getEmitData());
