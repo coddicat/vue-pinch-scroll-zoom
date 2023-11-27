@@ -24,9 +24,11 @@ import '@coddicat/vue-pinch-scroll-zoom/style.css';
 ```html
 <PinchScrollZoom
   ref="zoomer"
+  within
+  centred
+  key-actions
   :width="300"
   :height="400"
-  within
   :min-scale="0.3"
   :max-scale="6"
   @scaling="e => onEvent('scaling', e)"
@@ -92,6 +94,12 @@ the following properties don't support the ".async" modifier
 |translate-y|no|transform: translateY|0|
 |throttleDelay|no|rendering delay (milliseconds)|25|
 |draggable|no|draggable of/off|true|
+|centred|no|centralize content in visible area|false|
+|key-actions|no|enable key press events(focused) for zooming and moving|false|
+|tabindex|no|tabindex attribute for the visible area|0 if keyActions enabled, value is required for key events|
+|key-zoom-velocity|no|zoom velocity when zooming by key events|0.2|
+|key-move-velocity|no|move velocity when moving by key events|10|
+|key-controls|no|Records of keyCode and actions|See PinchScrollZoomDefaultControls ('+', '-', arrows)|
 
 ## Events
 the following events are emitted with the argument:
@@ -111,9 +119,11 @@ export interface PinchScrollZoomEmitData {
 - dragging
 - scaling
 
-## Methods
+## Exposed Methods
+
+### Update the data
 ```ts
-.SetData(data: PinchScrollZoomSetData);
+.setData(data: PinchScrollZoomSetData);
 
 export interface PinchScrollZoomSetData {
     scale: number;
@@ -123,4 +133,19 @@ export interface PinchScrollZoomSetData {
     translateY: number;
 }
 
+```
+
+### Centralize image content in the visible area
+```ts
+.Centralize();
+```
+
+### Move image content in the visible area
+```ts
+.manualMove(deltaX: number, deltaY: number);
+```
+
+### Zoom image content in the visible area
+```ts
+.manualZoom(factor: number);
 ```
