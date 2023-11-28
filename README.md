@@ -100,6 +100,7 @@ the following properties don't support the ".async" modifier
 |key-zoom-velocity|no|zoom velocity when zooming by key events|0.2|
 |key-move-velocity|no|move velocity when moving by key events|10|
 |key-controls|no|Records of keyCode and actions|See PinchScrollZoomDefaultControls ('+', '-', arrows)|
+|translate3d|no|Toggle between 'translate' and 'translate3d' transformation|true|
 
 ## Events
 the following events are emitted with the argument:

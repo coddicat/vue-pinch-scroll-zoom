@@ -70,6 +70,7 @@ function reset(): void {
       style="border: 1px solid black"
       :content-width="500"
       :content-height="500"
+      translate3d
     >
       <img src="https://picsum.photos/500/500" width="500" height="500" />
     </PinchScrollZoom>
