@@ -47,6 +47,7 @@ const props = withDefaults(
     keyZoomVelocity?: number;
     keyMoveVelocity?: number;
     keyControls?: Record<string, PinchScrollZoomKeyAction>;
+    translate3d?: boolean;
   }>(),
   {
     translateX: 0,
@@ -60,7 +61,8 @@ const props = withDefaults(
     draggable: true,
     keyActions: false,
     keyZoomVelocity: 0.2,
-    keyMoveVelocity: 10
+    keyMoveVelocity: 10,
+    translate3d: true
   }
 );
 const controls = computed(
@@ -112,7 +114,9 @@ const componentStyle = computed(() => ({
 const containerStyle = computed(() => {
   const x = `${state.axisX.point}px`;
   const y = `${state.axisY.point}px`;
-  const translate = `translate(${x}, ${y}) scale(${state.currentScale})`;
+  const translate = props.translate3d
+    ? `translate3d(${x}, ${y}, 0) scale(${state.currentScale})`
+    : `translate(${x}, ${y}) scale(${state.currentScale})`;
   const transformOrigin = `${state.axisX.origin}px ${state.axisY.origin}px`;
 
   return {
@@ -144,6 +148,7 @@ function setData(data: PinchScrollZoomSetData): PinchScrollZoomEmitData {
   if (data.originY !== undefined) {
     state.axisY.setOrigin(data.originY);
   }
+  checkWithin();
   return getEmitData();
 }
 

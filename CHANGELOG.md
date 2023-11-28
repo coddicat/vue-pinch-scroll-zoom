@@ -9,3 +9,6 @@
 |key-move-velocity|no|move velocity when moving by key events|10|
 |key-controls|no|Records of keyCode and actions|See PinchScrollZoomDefaultControls ('+', '-', arrows)|
 
+# 4.3.5
+- Fixed a bug: The setData method does not respect within props
+- Added using translate3d transformation
