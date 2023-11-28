@@ -137,7 +137,7 @@ export interface PinchScrollZoomSetData {
 
 ### Centralize image content in the visible area
 ```ts
-.Centralize();
+.centralize();
 ```
 
 ### Move image content in the visible area
@@ -147,5 +147,5 @@ export interface PinchScrollZoomSetData {
 
 ### Zoom image content in the visible area
 ```ts
-.manualZoom(factor: number);
+.manualZoom(factor: number); //factor relative to the current value, so if current scale is 2 and execute .manualZoom(2) the new scale value will be 4
 ```
