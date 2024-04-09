@@ -48,7 +48,7 @@ function reset(): void {
 </script>
 
 <template>
-  <div style="text-align: center">
+  <div style="text-align: left">
     scale: {{ state.scale?.toFixed(2) }} <br />
     origin: ({{ state.originX?.toFixed(2) }}, {{ state.originY?.toFixed(2) }})
     <br />
