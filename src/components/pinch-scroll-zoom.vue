@@ -41,7 +41,7 @@ const props = withDefaults(
     maxScale?: number;
     wheelVelocity?: number;
     draggable?: boolean;
-    centred?: boolean;
+    centered?: boolean;
     keyActions?: boolean;
     tabindex?: number;
     keyZoomVelocity?: number;
@@ -97,7 +97,7 @@ const state = reactive({
   })
 });
 
-if (props.centred) {
+if (props.centered) {
   centralize();
 }
 
@@ -415,7 +415,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('mouseup', stopDrag);
 });
 
-watch(() => props.centred, centralize);
+watch(() => props.centered, centralize);
 watch(() => props.scale, submitScale);
 watch(
   () => props.translateX,
@@ -465,11 +465,13 @@ watch(
 
 <style lang="scss">
 .pinch-scroll-zoom {
+  text-align: initial;
   position: relative;
   touch-action: none;
   user-select: none;
   user-zoom: none;
   overflow: hidden;
+
   :active {
     cursor: all-scroll;
   }

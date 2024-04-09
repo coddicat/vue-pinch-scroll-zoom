@@ -48,7 +48,7 @@ function reset(): void {
 </script>
 
 <template>
-  <div>
+  <div style="text-align: center">
     scale: {{ state.scale?.toFixed(2) }} <br />
     origin: ({{ state.originX?.toFixed(2) }}, {{ state.originY?.toFixed(2) }})
     <br />
@@ -56,7 +56,7 @@ function reset(): void {
     {{ state.translateY?.toFixed(2) }}) <br />
     <PinchScrollZoom
       ref="zoomer"
-      centred
+      centered
       key-actions
       :width="300"
       :height="400"

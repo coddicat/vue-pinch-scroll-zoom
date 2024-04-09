@@ -25,7 +25,7 @@ import '@coddicat/vue-pinch-scroll-zoom/style.css';
 <PinchScrollZoom
   ref="zoomer"
   within
-  centred
+  centered
   key-actions
   :width="300"
   :height="400"
@@ -81,8 +81,8 @@ the following properties don't support the ".async" modifier
 |----|--------|-----------|-------|
 |width|yes|visible area width||
 |height|yes|visible area height||
-|contentWidth|no|should be defined when content width larger than container width||
-|contentHeight|no|should be defined when content height larger than container height||
+|content-width|no|should be defined when content width is different from container width||
+|content-height|no|should be defined when content height is different from container height||
 |minScale|no|minimum allowable scaling|0.3|
 |maxScale|no|maximum allowable scaling|5|
 |within|no|limit scrolling of content to its borders|true|
@@ -94,7 +94,7 @@ the following properties don't support the ".async" modifier
 |translate-y|no|transform: translateY|0|
 |throttleDelay|no|rendering delay (milliseconds)|25|
 |draggable|no|draggable of/off|true|
-|centred|no|centralize content in visible area|false|
+|centered|no|centralize content in visible area|false|
 |key-actions|no|enable key press events(focused) for zooming and moving|false|
 |tabindex|no|tabindex attribute for the visible area|0 if keyActions enabled, value is required for key events|
 |key-zoom-velocity|no|zoom velocity when zooming by key events|0.2|
